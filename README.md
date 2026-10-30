@@ -5,14 +5,18 @@ O fluxo planejado é **Tutor → Animal → Agendamento → Consulta da agenda**
 
 ## Etapa atual
 
-Etapa 4: criação e consulta de agendamentos para animais cadastrados, disponíveis
-somente para colaboradores autenticados. As etapas anteriores foram registradas
-em `1997ba5` (estrutura inicial), `fd43008` (autenticação) e `bd8a866` (tutores e animais).
+Etapa 5: consolidação da suíte pytest e integração contínua com GitHub Actions.
+O MVP mantém autenticação, cadastros de tutores e animais e criação e consulta
+de agendamentos, sem novas funcionalidades de negócio nesta etapa.
+
+As quatro primeiras etapas já foram commitadas e enviadas ao
+[repositório no GitHub](https://github.com/Leandro97-cmd/patas-e-pelos-mvp):
+`1997ba5` (estrutura inicial), `fd43008` (autenticação), `bd8a866` (tutores e animais)
+e `d88d152` (agendamentos).
 
 Não há conclusão de atendimento, cancelamento de agendamentos, histórico de
 atendimentos, pagamentos, controle financeiro, estoque, emissão fiscal ou mensagens automáticas.
-Também não há cadastro público de colaboradores, recuperação de senha ou
-GitHub Actions nesta etapa.
+Também não há cadastro público de colaboradores ou recuperação de senha.
 
 ## Tecnologias
 
@@ -23,6 +27,11 @@ GitHub Actions nesta etapa.
 - Argon2id com `argon2-cffi`, para armazenamento de senhas.
 - Flask-WTF para proteção CSRF dos formulários.
 - pytest com testes isolados de autenticação, cadastros e agendamentos.
+- GitHub Actions para executar a suíte em push e pull request.
+
+As quatro dependências diretas permanecem em um único `requirements.txt`,
+incluindo pytest. Para este MVP, um único comando instala o necessário para
+desenvolvimento e testes, sem acrescentar arquivos ou ferramentas de gestão.
 
 É necessário acesso à internet para instalar dependências e carregar o Bootstrap.
 Os estilos locais mantêm a página legível se o CDN estiver indisponível.
@@ -300,6 +309,9 @@ ao menu, com a mesma navegação, foco e tabela responsiva das demais páginas.
 
 ```text
 patas e pelos/
+├── .github/
+│   └── workflows/
+│       └── tests.yml
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
@@ -363,16 +375,21 @@ patas e pelos/
 - `app/presentation/`: rotas HTTP; templates e arquivos estáticos compõem a interface.
 - `app/services/`: regras de cadastro, agendamento, validação e autenticação com Argon2id.
 - `app/repositories/`: conexão e persistência SQLite com consultas parametrizadas.
-- `tests/` e `pytest.ini`: preparação para testes automatizados.
+- `tests/` e `pytest.ini`: suíte automatizada por domínio e configuração do pytest.
+- `.github/workflows/tests.yml`: execução automática dos testes no GitHub Actions.
 - `.gitignore`: impede versionar ambientes virtuais, caches, segredos e bancos locais.
 
 ## Testes automatizados
 
-Execute:
+Na pasta do projeto, com o ambiente virtual preparado e Python 3.12, execute:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pytest -q
 ```
+
+O comando executa toda a suíte. Para investigar uma falha com mais detalhes,
+use `python -m pytest -v` com o Python do ambiente virtual.
 
 Os testes usam bancos temporários, chaves aleatórias e colaboradores fictícios.
 Não é necessário definir `PATAS_SECRET_KEY`, criar um banco real ou configurar
@@ -389,6 +406,65 @@ fechados, datas e horários inválidos, animal e tutor existentes, conflitos,
 ordenação, exibição dos relacionamentos, observações, CSRF, autenticação e
 atualização do banco preservando os cadastros e agendamentos existentes.
 
+### Organização e cobertura revisada
+
+| Domínio | Arquivo | Comportamentos cobertos |
+| --- | --- | --- |
+| Autenticação | `tests/test_auth.py` | Login válido e inválido, acesso sem e com autenticação, logout |
+| Tutor | `tests/test_cadastros.py` | Cadastro válido, nome e telefone obrigatórios, duplicidade e listagem |
+| Animal | `tests/test_cadastros.py` | Cadastro válido, tutor obrigatório e existente, campos obrigatórios e listagem |
+| Agendamento | `tests/test_agendamentos.py` | Criação válida, animal obrigatório e existente, serviço obrigatório e permitido, data e horário obrigatórios, conflito, status Agendado e listagem com animal e tutor corretos |
+
+`tests/conftest.py` compartilha as fixtures de aplicação, banco temporário,
+credenciais fictícias, cliente HTTP, token CSRF, login e cliente autenticado.
+Os auxiliares de envio específicos de cada domínio permanecem em seus arquivos,
+para manter os testes fáceis de ler. Nenhum cenário foi adicionado ou removido
+nesta consolidação; a suíte possui 178 casos parametrizados.
+
+A suíte automatizada protege contra regressões nos comportamentos verificados.
+Isso não substitui a revisão e a conferência manual da interface, nem garante
+que todo defeito possível será detectado.
+
+## Integração contínua com GitHub Actions
+
+O workflow está em `.github/workflows/tests.yml`, com o nome
+**Testes automatizados**. Ele é disparado em `push` e `pull_request`, sem filtro
+de branch, e executa um único job em Ubuntu com Python 3.12:
+
+1. Obtém o código com `actions/checkout`.
+2. Configura Python 3.12 com `actions/setup-python` e cache de downloads do pip.
+3. Instala as dependências de `requirements.txt`.
+4. Executa `python -m pytest -q`, sem ignorar erros.
+
+O job tem limite de 10 minutos e permissão apenas de leitura do conteúdo do
+repositório. O checkout não mantém credenciais gravadas na configuração Git.
+Não é necessário cadastrar segredos no GitHub: a suíte gera chaves aleatórias
+e credenciais fictícias e utiliza bancos temporários por teste. Não acessa o
+banco local de demonstração, não inicia um servidor e não publica o sistema.
+
+Após enviar o commit que adiciona o workflow, acompanhe as execuções na aba
+[Actions do repositório](https://github.com/Leandro97-cmd/patas-e-pelos-mvp/actions).
+Abra **Testes automatizados**, selecione a execução e o job **pytest (Python 3.12)**.
+
+- **Success / sucesso, normalmente verde:** todas as etapas terminaram sem erro.
+  A etapa de testes deve mostrar `178 passed` enquanto a suíte permanecer igual.
+- **Failure / falha, normalmente vermelho:** alguma etapa falhou. Se for a etapa
+  de testes, consulte o nome do teste e a comparação esperada/obtida no log;
+  corrija o problema, execute a suíte localmente e envie a correção.
+- Falhas de instalação, configuração ou coleta de testes também tornam a
+  execução malsucedida. `No tests ran`, execução cancelada ou execução ignorada
+  não significam que a suíte passou.
+
+Qualquer teste que falhar faz pytest retornar um código diferente de zero e
+reprova o job. O workflow não configura bloqueio de merge: caso desejado no
+futuro, isso deve ser definido nas regras do repositório.
+
+A primeira execução remota desta etapa ocorrerá depois do seu commit e push;
+a validação local não é uma execução do GitHub Actions.
+
+Referências: [testes Python no GitHub Actions](https://docs.github.com/en/actions/tutorials/build-and-test-code/python),
+[checkout](https://github.com/actions/checkout) e [setup-python](https://github.com/actions/setup-python).
+
 ## Próximo commit
 
 Revise as alterações antes de versionar. Não adicione `.venv/`, `instance/`,
@@ -396,9 +472,9 @@ chaves, senhas ou bancos locais ao Git.
 
 ```powershell
 git diff
-git add README.md app tests/test_agendamentos.py
+git add .github/workflows/tests.yml README.md tests/conftest.py tests/test_cadastros.py tests/test_agendamentos.py
 git status --short
-git commit -m "feat: implementa criação e consulta de agendamentos"
+git commit -m "ci: configura testes automatizados no GitHub Actions"
 ```
 
 O commit não é feito automaticamente. As próximas funcionalidades aguardam revisão.

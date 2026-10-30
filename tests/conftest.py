@@ -51,3 +51,10 @@ def login(client, csrf_token, credentials):
         data.update(overrides)
         return client.post("/login", data=data)
     return do_login
+
+
+@pytest.fixture
+def authed_client(client, login):
+    """Cliente autenticado pelo formulário real, com CSRF habilitado."""
+    assert login().status_code == 303
+    return client

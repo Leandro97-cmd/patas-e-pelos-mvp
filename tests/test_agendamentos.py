@@ -12,12 +12,6 @@ from app.services.tutores import create_tutor
 
 
 @pytest.fixture
-def authed_client(client, login):
-    assert login().status_code == 303
-    return client
-
-
-@pytest.fixture
 def submit(authed_client, csrf_token):
     def post(data):
         return authed_client.post("/agendamentos/novo", data={
