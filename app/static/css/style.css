@@ -89,3 +89,26 @@ main {
 .skip-link:focus {
   transform: translateY(0);
 }
+
+.auth-panel {
+  max-width: 30rem;
+}
+
+.btn {
+  min-height: 44px;
+}
+
+.btn-primary {
+  --bs-btn-bg: #155644;
+  --bs-btn-border-color: #155644;
+  --bs-btn-hover-bg: #103f33;
+  --bs-btn-hover-border-color: #103f33;
+  --bs-btn-active-bg: #103f33;
+  --bs-btn-active-border-color: #103f33;
+}
+
+.form-control:focus,
+.btn:focus-visible {
+  outline: 3px solid #155cc4;
+  outline-offset: 3px;
+}

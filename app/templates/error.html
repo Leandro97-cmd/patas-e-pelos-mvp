@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Não foi possível continuar · Patas e Pelos{% endblock %}
+{% block content %}
+  <section class="welcome-panel" aria-labelledby="error-title">
+    <h1 id="error-title" class="h2">Não foi possível continuar</h1>
+    <p role="alert">{{ message }}</p>
+    <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Voltar ao início</a>
+  </section>
+{% endblock %}

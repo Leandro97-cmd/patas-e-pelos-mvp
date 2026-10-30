@@ -15,8 +15,14 @@
   <body>
     <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
     <header class="site-header py-3">
-      <div class="container">
+      <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
         <a class="brand" href="{{ url_for('main.index') }}">Patas e Pelos</a>
+        {% if g.user %}
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-light">Sair</button>
+          </form>
+        {% endif %}
       </div>
     </header>
     <main id="conteudo" class="container py-5" tabindex="-1">
