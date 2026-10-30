@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_form_helpers.html" import text_input, observations, error_summary, field_error with context %}
+{% block title %}Novo agendamento · Patas e Pelos{% endblock %}
+{% block content %}
+  <section class="welcome-panel form-panel mx-auto" aria-labelledby="form-title">
+    <h1 id="form-title" class="h2">Novo agendamento</h1>
+    <p>Escolha o animal e confira seu tutor. O status inicial será Agendado.</p>
+    {% if not animais %}
+      <p class="alert alert-info">Nenhum animal cadastrado com tutor válido. <a href="{{ url_for('animais.novo') }}">Cadastre um animal</a> antes de criar um agendamento.</p>
+    {% endif %}
+    {{ error_summary() }}
+    <form method="post" action="{{ url_for('agendamentos.novo') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="form-label" for="id_animal">Animal (obrigatório)</label>
+        <select class="form-select{% if errors.get('id_animal') %} is-invalid{% endif %}"
+                id="id_animal" name="id_animal" required
+                {% if errors.get('id_animal') %}aria-invalid="true"{% endif %}
+                aria-describedby="id_animal-hint{% if errors.get('id_animal') %} id_animal-error{% endif %}">
+          <option value="">Selecione um animal</option>
+          {% for animal in animais %}
+            <option value="{{ animal['id_animal'] }}"{% if data.get('id_animal') == animal['id_animal']|string %} selected{% endif %}>#{{ animal['id_animal'] }} — {{ animal['nome'] }} — Tutor #{{ animal['id_tutor'] }}: {{ animal['tutor_nome'] }}</option>
+          {% endfor %}
+        </select>
+        <p id="id_animal-hint" class="form-text">O identificador e o nome do tutor aparecem ao lado de cada animal.</p>
+        {{ field_error('id_animal') }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="servico">Serviço (obrigatório)</label>
+        <select class="form-select{% if errors.get('servico') %} is-invalid{% endif %}"
+                id="servico" name="servico" required
+                {% if errors.get('servico') %}aria-invalid="true" aria-describedby="servico-error"{% endif %}>
+          <option value="">Selecione um serviço</option>
+          {% for servico in servicos %}
+            <option value="{{ servico }}"{% if data.get('servico') == servico %} selected{% endif %}>{{ servico }}</option>
+          {% endfor %}
+        </select>
+        {{ field_error('servico') }}
+      </div>
+      {{ text_input('data', 'Data', 10, required=true, type='date', hint='Informe uma data válida no calendário.') }}
+      {{ text_input('horario', 'Horário', 5, required=true, type='time', hint='Formato de 24 horas, com precisão de minutos. Só é permitido um agendamento por data e horário na agenda.') }}
+      {{ observations() }}
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-primary" type="submit"{% if not animais %} disabled{% endif %}>Salvar agendamento</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('agendamentos.index') }}">Cancelar e voltar à agenda</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

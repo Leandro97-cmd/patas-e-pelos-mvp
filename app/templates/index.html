@@ -25,5 +25,14 @@
         </div>
       </section>
     </div>
+    <div class="col-12">
+      <section class="welcome-panel" aria-labelledby="agenda-title">
+        <h2 id="agenda-title" class="h4">Agenda</h2>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-primary" href="{{ url_for('agendamentos.novo') }}">Novo agendamento</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('agendamentos.index') }}">Consultar agenda</a>
+        </div>
+      </section>
+    </div>
   </nav>
 {% endblock %}

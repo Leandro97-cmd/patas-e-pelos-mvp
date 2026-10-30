@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Agenda · Patas e Pelos{% endblock %}
+{% block content %}
+  <section class="welcome-panel" aria-labelledby="list-title">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+      <h1 id="list-title" class="h2 mb-0">Agenda</h1>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary" href="{{ url_for('agendamentos.novo') }}">Novo agendamento</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">Voltar ao menu</a>
+      </div>
+    </div>
+    {% if agendamentos %}
+      <p id="table-help">Em telas pequenas, deslize a tabela para os lados para consultar todos os campos.</p>
+      <div class="table-responsive" role="region" aria-label="Lista de agendamentos" aria-describedby="table-help" tabindex="0">
+        <table class="table align-middle records-table">
+          <caption>Agendamentos em ordem crescente de data e horário.</caption>
+          <thead><tr>
+            <th scope="col">Data</th><th scope="col">Horário</th>
+            <th scope="col">Animal</th><th scope="col">Tutor</th>
+            <th scope="col">Serviço</th><th scope="col">Status</th>
+            <th scope="col">Observações</th>
+          </tr></thead>
+          <tbody>
+            {% for agendamento in agendamentos %}
+              <tr>
+                <td>{{ agendamento['data_formatada'] }}</td><td>{{ agendamento['horario'] }}</td>
+                <td>#{{ agendamento['id_animal'] }} — {{ agendamento['animal_nome'] }}</td>
+                <td>#{{ agendamento['id_tutor'] }} — {{ agendamento['tutor_nome'] }}</td>
+                <td>{{ agendamento['servico'] }}</td><td>{{ agendamento['status'] }}</td>
+                <td class="record-notes">{{ agendamento['observacoes'] or 'Não informadas' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>Nenhum agendamento cadastrado. Use “Novo agendamento” para começar.</p>
+    {% endif %}
+  </section>
+{% endblock %}

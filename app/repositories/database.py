@@ -53,4 +53,21 @@ def init_db():
             FOREIGN KEY (id_tutor) REFERENCES tutores (id_tutor) ON DELETE RESTRICT
         )
     """)
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS agendamentos (
+            id_agendamento INTEGER PRIMARY KEY,
+            data TEXT NOT NULL,
+            horario TEXT NOT NULL,
+            servico TEXT NOT NULL CHECK (servico IN ('Banho', 'Tosa', 'Banho + Tosa')),
+            status TEXT NOT NULL DEFAULT 'Agendado'
+                CHECK (status IN ('Agendado', 'Concluído', 'Cancelado')),
+            id_animal INTEGER NOT NULL,
+            observacoes TEXT,
+            FOREIGN KEY (id_animal) REFERENCES animais (id_animal) ON DELETE RESTRICT
+        )
+    """)
+    db.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS agendamentos_horario_ocupado
+        ON agendamentos (data, horario) WHERE status <> 'Cancelado'
+    """)
     db.commit()

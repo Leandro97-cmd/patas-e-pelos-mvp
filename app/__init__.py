@@ -28,6 +28,7 @@ def create_app(test_config=None):
 
     from app.cli import register_commands
     from app.presentation.auth import auth
+    from app.presentation.agendamentos import agendamentos
     from app.presentation.animais import animais
     from app.presentation.routes import main
     from app.presentation.tutores import tutores
@@ -37,6 +38,7 @@ def create_app(test_config=None):
     app.register_blueprint(main)
     app.register_blueprint(tutores)
     app.register_blueprint(animais)
+    app.register_blueprint(agendamentos)
     CSRFProtect(app)
     app.teardown_appcontext(close_db)
     register_commands(app)

@@ -22,6 +22,8 @@
             <a href="{{ url_for('main.index') }}">Início</a>
             <a href="{{ url_for('tutores.index') }}">Tutores</a>
             <a href="{{ url_for('animais.index') }}">Animais</a>
+            <a href="{{ url_for('agendamentos.index') }}">Agenda</a>
+            <a href="{{ url_for('agendamentos.novo') }}">Novo agendamento</a>
           </nav>
           <form method="post" action="{{ url_for('auth.logout') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

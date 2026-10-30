@@ -22,3 +22,12 @@ def list_all():
         JOIN tutores AS t ON t.id_tutor = a.id_tutor
         ORDER BY a.id_animal DESC
     """).fetchall()
+
+
+def find_with_tutor(id_animal):
+    return get_db().execute("""
+        SELECT a.id_animal, a.nome, t.id_tutor, t.nome AS tutor_nome
+        FROM animais AS a
+        JOIN tutores AS t ON t.id_tutor = a.id_tutor
+        WHERE a.id_animal = ?
+    """, (id_animal,)).fetchone()
