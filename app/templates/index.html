@@ -6,4 +6,24 @@
     <h1 id="welcome-title" class="display-5 fw-bold">Patas e Pelos</h1>
     <p class="lead mb-0">Olá, {{ g.user['nome'] }}. Bem-vindo ao sistema de organização do banho e tosa.</p>
   </section>
+  <nav class="row g-3 mt-3" aria-label="Cadastros e consultas">
+    <div class="col-12 col-md-6">
+      <section class="welcome-panel h-100" aria-labelledby="tutores-title">
+        <h2 id="tutores-title" class="h4">Tutores</h2>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-primary" href="{{ url_for('tutores.novo') }}">Cadastrar tutor</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('tutores.index') }}">Consultar tutores</a>
+        </div>
+      </section>
+    </div>
+    <div class="col-12 col-md-6">
+      <section class="welcome-panel h-100" aria-labelledby="animais-title">
+        <h2 id="animais-title" class="h4">Animais</h2>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-primary" href="{{ url_for('animais.novo') }}">Cadastrar animal</a>
+          <a class="btn btn-outline-secondary" href="{{ url_for('animais.index') }}">Consultar animais</a>
+        </div>
+      </section>
+    </div>
+  </nav>
 {% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Animais · Patas e Pelos{% endblock %}
+{% block content %}
+  <section class="welcome-panel" aria-labelledby="list-title">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+      <h1 id="list-title" class="h2 mb-0">Animais</h1>
+      <a class="btn btn-primary" href="{{ url_for('animais.novo') }}">Cadastrar animal</a>
+    </div>
+    {% if animais %}
+      <p id="table-help">Em telas pequenas, deslize a tabela para os lados para consultar todos os campos.</p>
+      <div class="table-responsive" role="region" aria-label="Lista de animais" aria-describedby="table-help" tabindex="0">
+        <table class="table align-middle records-table">
+          <caption>Animais cadastrados e seus tutores, do mais recente para o mais antigo.</caption>
+          <thead><tr>
+            <th scope="col">ID</th><th scope="col">Nome</th><th scope="col">Espécie</th>
+            <th scope="col">Raça</th><th scope="col">Porte</th>
+            <th scope="col">Tutor</th><th scope="col">Observações</th>
+          </tr></thead>
+          <tbody>
+            {% for animal in animais %}
+              <tr>
+                <th scope="row">{{ animal['id_animal'] }}</th>
+                <td>{{ animal['nome'] }}</td><td>{{ animal['especie'] }}</td>
+                <td>{{ animal['raca'] or 'Não informada' }}</td><td>{{ animal['porte'] }}</td>
+                <td>#{{ animal['id_tutor'] }} — {{ animal['tutor_nome'] }}</td>
+                <td class="record-notes">{{ animal['observacoes'] or 'Não informadas' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>Nenhum animal cadastrado. Use “Cadastrar animal” para começar.</p>
+    {% endif %}
+  </section>
+{% endblock %}

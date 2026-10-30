@@ -18,6 +18,11 @@
       <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
         <a class="brand" href="{{ url_for('main.index') }}">Patas e Pelos</a>
         {% if g.user %}
+          <nav aria-label="Menu principal" class="internal-nav d-flex flex-wrap gap-3">
+            <a href="{{ url_for('main.index') }}">Início</a>
+            <a href="{{ url_for('tutores.index') }}">Tutores</a>
+            <a href="{{ url_for('animais.index') }}">Animais</a>
+          </nav>
           <form method="post" action="{{ url_for('auth.logout') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-light">Sair</button>
@@ -26,6 +31,9 @@
       </div>
     </header>
     <main id="conteudo" class="container py-5" tabindex="-1">
+      {% for message in get_flashed_messages() %}
+        <p class="alert alert-success" role="status">{{ message }}</p>
+      {% endfor %}
       {% block content %}{% endblock %}
     </main>
     <footer class="site-footer py-3">

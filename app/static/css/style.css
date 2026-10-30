@@ -108,7 +108,30 @@ main {
 }
 
 .form-control:focus,
+.form-select:focus,
 .btn:focus-visible {
   outline: 3px solid #155cc4;
   outline-offset: 3px;
+}
+
+.form-panel {
+  max-width: 44rem;
+}
+
+.internal-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #fff;
+  text-underline-offset: 0.2em;
+}
+
+.records-table td {
+  min-width: 8rem;
+  max-width: 24rem;
+  overflow-wrap: anywhere;
+}
+
+.record-notes {
+  white-space: pre-wrap;
 }

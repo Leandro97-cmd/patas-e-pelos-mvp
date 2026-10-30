@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Tutores · Patas e Pelos{% endblock %}
+{% block content %}
+  <section class="welcome-panel" aria-labelledby="list-title">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+      <h1 id="list-title" class="h2 mb-0">Tutores</h1>
+      <a class="btn btn-primary" href="{{ url_for('tutores.novo') }}">Cadastrar tutor</a>
+    </div>
+    {% if tutores %}
+      <p id="table-help">Em telas pequenas, deslize a tabela para os lados para consultar todos os campos.</p>
+      <div class="table-responsive" role="region" aria-label="Lista de tutores" aria-describedby="table-help" tabindex="0">
+        <table class="table align-middle records-table">
+          <caption>Tutores cadastrados, do mais recente para o mais antigo.</caption>
+          <thead><tr>
+            <th scope="col">ID</th><th scope="col">Nome</th>
+            <th scope="col">Telefone</th><th scope="col">Observações</th>
+          </tr></thead>
+          <tbody>
+            {% for tutor in tutores %}
+              <tr>
+                <th scope="row">{{ tutor['id_tutor'] }}</th>
+                <td>{{ tutor['nome'] }}</td><td>{{ tutor['telefone'] }}</td>
+                <td class="record-notes">{{ tutor['observacoes'] or 'Não informadas' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>Nenhum tutor cadastrado. Use “Cadastrar tutor” para começar.</p>
+    {% endif %}
+  </section>
+{% endblock %}

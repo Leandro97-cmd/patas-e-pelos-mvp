@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "_form_helpers.html" import text_input, observations, error_summary, field_error with context %}
+{% block title %}Cadastrar animal · Patas e Pelos{% endblock %}
+{% block content %}
+  <section class="welcome-panel form-panel mx-auto" aria-labelledby="form-title">
+    <h1 id="form-title" class="h2">Cadastrar animal</h1>
+    <p>Todo animal precisa estar vinculado a um tutor cadastrado.</p>
+    {% if not tutores %}
+      <p class="alert alert-info">Nenhum tutor cadastrado. <a href="{{ url_for('tutores.novo') }}">Cadastre um tutor</a> antes de cadastrar o animal.</p>
+    {% endif %}
+    {{ error_summary() }}
+    <form method="post" action="{{ url_for('animais.novo') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="form-label" for="id_tutor">Tutor (obrigatório)</label>
+        <select class="form-select{% if errors.get('id_tutor') %} is-invalid{% endif %}"
+                id="id_tutor" name="id_tutor" required
+                {% if errors.get('id_tutor') %}aria-invalid="true"{% endif %}
+                aria-describedby="id_tutor-hint{% if errors.get('id_tutor') %} id_tutor-error{% endif %}">
+          <option value="">Selecione um tutor</option>
+          {% for tutor in tutores %}
+            <option value="{{ tutor['id_tutor'] }}"{% if data.get('id_tutor') == tutor['id_tutor']|string %} selected{% endif %}>#{{ tutor['id_tutor'] }} — {{ tutor['nome'] }} — {{ tutor['telefone'] }}</option>
+          {% endfor %}
+        </select>
+        <p id="id_tutor-hint" class="form-text">Confira o identificador, o nome e o telefone para escolher o responsável correto.</p>
+        {{ field_error('id_tutor') }}
+      </div>
+      {{ text_input('nome', 'Nome', 100, required=true) }}
+      {{ text_input('especie', 'Espécie', 60, required=true, hint='Ex.: cão, gato ou outra espécie. Até 60 caracteres.') }}
+      {{ text_input('raca', 'Raça', 100) }}
+      {{ text_input('porte', 'Porte', 30, required=true, hint='Ex.: pequeno, médio ou grande. Até 30 caracteres.') }}
+      {{ observations() }}
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-primary" type="submit"{% if not tutores %} disabled{% endif %}>Cadastrar animal</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('animais.index') }}">Voltar à lista de animais</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

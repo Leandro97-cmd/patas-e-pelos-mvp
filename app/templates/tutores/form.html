@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_form_helpers.html" import text_input, observations, error_summary with context %}
+{% block title %}Cadastrar tutor · Patas e Pelos{% endblock %}
+{% block content %}
+  <section class="welcome-panel form-panel mx-auto" aria-labelledby="form-title">
+    <h1 id="form-title" class="h2">Cadastrar tutor</h1>
+    <p>Informe o nome e o telefone do responsável pelo animal.</p>
+    {{ error_summary() }}
+    <form method="post" action="{{ url_for('tutores.novo') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {{ text_input('nome', 'Nome', 100, required=true) }}
+      {{ text_input('telefone', 'Telefone', 32, required=true, type='tel', hint='De 8 a 15 dígitos. Pode incluir DDD, código do país, espaços, parênteses, hífen e + inicial.') }}
+      {{ observations() }}
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-primary" type="submit">Cadastrar tutor</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('tutores.index') }}">Voltar à lista de tutores</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

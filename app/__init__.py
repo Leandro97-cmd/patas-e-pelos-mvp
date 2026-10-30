@@ -28,11 +28,15 @@ def create_app(test_config=None):
 
     from app.cli import register_commands
     from app.presentation.auth import auth
+    from app.presentation.animais import animais
     from app.presentation.routes import main
+    from app.presentation.tutores import tutores
     from app.repositories.database import close_db
 
     app.register_blueprint(auth)
     app.register_blueprint(main)
+    app.register_blueprint(tutores)
+    app.register_blueprint(animais)
     CSRFProtect(app)
     app.teardown_appcontext(close_db)
     register_commands(app)
@@ -45,10 +49,16 @@ def create_app(test_config=None):
 
     @app.errorhandler(sqlite3.Error)
     def database_error(error):
-        app.logger.error("Falha de acesso ao banco de colaboradores.")
+        app.logger.error("Falha de acesso ao banco de dados.")
         return render_template(
             "error.html", message="Não foi possível concluir a solicitação. Tente novamente mais tarde."
         ), 503
+
+    @app.errorhandler(413)
+    def request_too_large(error):
+        return render_template(
+            "error.html", message="O formulário enviado é muito grande. Reduza o conteúdo e tente novamente."
+        ), 413
 
     @app.after_request
     def security_headers(response):

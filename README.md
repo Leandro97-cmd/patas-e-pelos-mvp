@@ -5,10 +5,12 @@ O fluxo planejado é **Tutor → Animal → Agendamento → Consulta da agenda**
 
 ## Etapa atual
 
-Etapa 2: autenticação de colaboradores, sessão, proteção das páginas internas
-e logout. A etapa 1 foi registrada no commit `1997ba5`.
+Etapa 3: cadastro e consulta básica de tutores e animais, disponíveis somente
+para colaboradores autenticados. As etapas anteriores foram registradas em
+`1997ba5` (estrutura inicial) e `fd43008` (autenticação).
 
-Não há cadastro de tutores, animais, agendamentos, histórico ou pagamentos.
+Não há agendamentos, histórico de atendimentos, pagamentos, controle financeiro,
+estoque, emissão fiscal ou mensagens automáticas.
 Também não há cadastro público de colaboradores, recuperação de senha ou
 GitHub Actions nesta etapa.
 
@@ -17,10 +19,10 @@ GitHub Actions nesta etapa.
 - Python 3.12.
 - Flask 3.x e templates Jinja.
 - Bootstrap 5.3.8, carregado por CDN com verificação de integridade.
-- SQLite da biblioteca padrão do Python, somente para colaboradores.
+- SQLite da biblioteca padrão do Python, para colaboradores, tutores e animais.
 - Argon2id com `argon2-cffi`, para armazenamento de senhas.
 - Flask-WTF para proteção CSRF dos formulários.
-- pytest com testes isolados de autenticação.
+- pytest com testes isolados de autenticação e cadastros.
 
 É necessário acesso à internet para instalar dependências e carregar o Bootstrap.
 Os estilos locais mantêm a página legível se o CDN estiver indisponível.
@@ -78,6 +80,21 @@ Essas variáveis valem somente para a sessão atual do terminal.
 
 ## Configurar o acesso local
 
+### Atualizar uma instalação da etapa 2
+
+Com o servidor encerrado e a mesma chave de sessão já configurada no terminal,
+execute:
+
+```powershell
+.\.venv\Scripts\python.exe -m flask --app run init-db
+.\.venv\Scripts\python.exe run.py
+```
+
+`init-db` acrescenta as tabelas `tutores` e `animais` sem apagar colaboradores
+ou outros registros existentes. Não remova o banco e não recrie seu colaborador.
+Se necessário, faça uma cópia privada do banco com o servidor encerrado antes
+de atualizar. Caso esteja configurando o projeto pela primeira vez, siga abaixo.
+
 ### 1. Chave de sessão
 
 Na mesma janela do PowerShell que será usada para iniciar o sistema, gere
@@ -120,7 +137,7 @@ usuário. Não são aceitos usuários duplicados. A senha mantém exatamente os
 caracteres digitados e não pode conter apenas espaços.
 
 O banco fica em `instance/patas_e_pelos.sqlite3`, excluído do Git. O comando
-`init-db` pode ser executado novamente sem apagar colaboradores existentes.
+`init-db` pode ser executado novamente sem apagar registros existentes.
 Proteja o arquivo com as permissões do sistema operacional; SQLite não está
 criptografado. Caso precise de backup local, copie o banco com a aplicação
 encerrada e mantenha a cópia em local privado.
@@ -133,8 +150,66 @@ encerrada e mantenha a cópia em local privado.
 
 Abra <http://127.0.0.1:5000>. O sistema direciona para `/login`. Entre com
 `demo.local` e a senha que você definiu. Após o login, a página inicial interna
-mostra o nome do colaborador e o botão **Sair**. Para encerrar o servidor,
-pressione `Ctrl+C` no terminal.
+mostra o nome do colaborador, as opções de cadastro e consulta e o botão
+**Sair**. Para encerrar o servidor, pressione `Ctrl+C` no terminal.
+
+## Tutores e animais
+
+No menu interno, use **Cadastrar tutor** e depois **Cadastrar animal**.
+As opções **Consultar tutores** e **Consultar animais** exibem os registros,
+do mais recente para o mais antigo. Cadastros bem-sucedidos redirecionam para
+a lista com uma confirmação textual. Atualizar a lista não repete o cadastro.
+
+Rotas internas desta etapa:
+
+| Página | Endereço | Ações |
+| --- | --- | --- |
+| Lista de tutores | `/tutores` | Consultar os tutores cadastrados |
+| Cadastro de tutor | `/tutores/novo` | Exibir e enviar o formulário |
+| Lista de animais | `/animais` | Consultar animais com nome e ID do tutor |
+| Cadastro de animal | `/animais/novo` | Exibir e enviar o formulário |
+
+### Regras dos tutores
+
+- `id_tutor`: inteiro e chave primária, gerado pelo SQLite.
+- Nome obrigatório, com até 100 caracteres. Espaços extras no nome são reduzidos.
+- Telefone obrigatório: de 8 a 15 dígitos, com entrada de até 32 caracteres.
+  São aceitos números, espaços, parênteses, hífen e `+` inicial. O telefone é
+  salvo e exibido somente com dígitos; informe DDD e código do país quando necessário.
+- Observações opcionais, com até 2000 caracteres. Valores vazios ficam como `NULL`.
+- O mesmo nome e telefone não podem ser cadastrados novamente. A comparação
+  ignora maiúsculas, acentos e espaços extras no nome, além da formatação do
+  telefone. Uma chave derivada interna, `nome_chave`, permite aplicar a mesma
+  regra com uma restrição única no SQLite, inclusive em envios simultâneos.
+- Nomes diferentes podem compartilhar telefone; nomes iguais podem ter telefones
+  diferentes. Códigos de país não são acrescentados ou removidos automaticamente.
+  A regra é simples: não identifica apelidos, mudanças de telefone ou grafias diferentes.
+
+### Regras dos animais
+
+- `id_animal`: inteiro e chave primária, gerado pelo SQLite.
+- Nome obrigatório, com até 100 caracteres.
+- Espécie obrigatória, com até 60 caracteres; porte obrigatório, com até 30.
+  Ambos são textos livres, pois ainda não foi definido um catálogo de categorias.
+- Raça opcional, com até 100 caracteres; observações opcionais, com até 2000.
+- Tutor obrigatório, escolhido em uma lista com ID, nome e telefone. Sem tutores,
+  o formulário orienta a cadastrar um primeiro e desabilita o botão de envio.
+- O servidor confirma que o tutor existe. A chave estrangeira do SQLite também
+  impede animais sem tutor e a remoção de um tutor referenciado.
+- A consulta mostra os dados do animal e o nome e identificador de seu tutor.
+
+Todos os campos são validados no servidor, mesmo quando a validação do navegador
+é ignorada. Erros identificam os campos e preservam os dados digitados. As listas
+têm indicação de estado vazio e tabelas que podem ser roladas horizontalmente
+em telas pequenas, inclusive por teclado.
+
+O limite total de envio é de 64 KiB, suficiente para os campos permitidos,
+inclusive textos Unicode. Envios acima desse limite recebem uma mensagem
+segura para reduzir o conteúdo.
+
+Não foram adicionadas edição, exclusão, busca avançada ou paginação. As consultas
+são listas simples, adequadas ao volume inicial do MVP. Não há CPF, endereço ou
+outros dados pessoais adicionais nos cadastros.
 
 ## Segurança e limites desta etapa
 
@@ -146,7 +221,7 @@ pressione `Ctrl+C` no terminal.
   metadados técnicos, sem nome, senha ou hash. Cookies assinados não são cifrados.
 - A sessão anterior é limpa ao entrar. O logout exige POST com token CSRF e
   remove a sessão do navegador. As respostas dinâmicas usam `Cache-Control: no-store`.
-- Login e logout têm proteção CSRF. Jinja escapa os dados exibidos, e as
+- Login, logout e cadastros têm proteção CSRF. Jinja escapa os dados exibidos, e as
   consultas SQLite usam parâmetros. Erros do banco não expõem detalhes na página.
 - O servidor atual usa HTTP apenas em `127.0.0.1`, com depuração desativada.
   Por isso, o cookie `Secure` fica desativado no uso local. Antes de disponibilizar
@@ -171,27 +246,42 @@ patas e pelos/
 │   ├── config.py
 │   ├── presentation/
 │   │   ├── __init__.py
+│   │   ├── animais.py
 │   │   ├── auth.py
-│   │   └── routes.py
+│   │   ├── routes.py
+│   │   └── tutores.py
 │   ├── services/
 │   │   ├── __init__.py
-│   │   └── auth.py
+│   │   ├── animais.py
+│   │   ├── auth.py
+│   │   ├── tutores.py
+│   │   └── validation.py
 │   ├── repositories/
 │   │   ├── __init__.py
+│   │   ├── animais.py
 │   │   ├── colaboradores.py
-│   │   └── database.py
+│   │   ├── database.py
+│   │   └── tutores.py
 │   ├── templates/
+│   │   ├── _form_helpers.html
 │   │   ├── base.html
 │   │   ├── error.html
 │   │   ├── index.html
-│   │   └── login.html
+│   │   ├── login.html
+│   │   ├── animais/
+│   │   │   ├── form.html
+│   │   │   └── list.html
+│   │   └── tutores/
+│   │       ├── form.html
+│   │       └── list.html
 │   └── static/
 │       └── css/
 │           └── style.css
 └── tests/
     ├── .gitkeep
     ├── conftest.py
-    └── test_auth.py
+    ├── test_auth.py
+    └── test_cadastros.py
 ```
 
 - `run.py`: entrada para iniciar o servidor local.
@@ -199,12 +289,12 @@ patas e pelos/
 - `app/config.py`: configurações iniciais, sem credenciais.
 - `app/cli.py`: comandos locais para preparar o banco e criar colaboradores.
 - `app/presentation/`: rotas HTTP; templates e arquivos estáticos compõem a interface.
-- `app/services/`: validação e autenticação de colaboradores com Argon2id.
+- `app/services/`: regras de cadastro, validação e autenticação com Argon2id.
 - `app/repositories/`: conexão e persistência SQLite com consultas parametrizadas.
 - `tests/` e `pytest.ini`: preparação para testes automatizados.
 - `.gitignore`: impede versionar ambientes virtuais, caches, segredos e bancos locais.
 
-## Testes da autenticação
+## Testes automatizados
 
 Execute:
 
@@ -219,6 +309,9 @@ um usuário de demonstração para executar a suíte. CSRF permanece habilitado.
 A suíte verifica login válido e inválido, acesso protegido, logout, CSRF,
 hashes Argon2id, validação, duplicidade, consultas parametrizadas, escape de
 HTML, cookies, usuário removido, chave obrigatória e comandos locais.
+Também verifica cadastro e consulta de tutores e animais, campos obrigatórios,
+limites, duplicidades, vínculo a tutor, estados vazios, menus, CSRF, acesso sem
+autenticação e atualização do banco sem perder os registros da etapa anterior.
 
 ## Próximo commit
 
@@ -227,9 +320,9 @@ chaves, senhas ou bancos locais ao Git.
 
 ```powershell
 git diff
-git add README.md requirements.txt app tests/conftest.py tests/test_auth.py
+git add README.md app tests/test_cadastros.py
 git status --short
-git commit -m "feat: adiciona autenticação de colaboradores"
+git commit -m "feat: implementa cadastro de tutores e animais"
 ```
 
 O commit não é feito automaticamente. As próximas funcionalidades aguardam revisão.

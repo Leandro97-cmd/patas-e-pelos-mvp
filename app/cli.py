@@ -9,9 +9,9 @@ from app.services.auth import create_colaborador
 def register_commands(app):
     @app.cli.command("init-db")
     def init_db_command():
-        """Cria a tabela sem apagar colaboradores existentes."""
+        """Cria as tabelas sem apagar dados existentes."""
         init_db()
-        click.echo("Banco de colaboradores preparado.")
+        click.echo("Banco de dados preparado, preservando os registros existentes.")
 
     @app.cli.command("create-colaborador")
     @click.option("--nome", prompt="Nome")

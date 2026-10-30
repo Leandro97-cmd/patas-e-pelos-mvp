@@ -1,0 +1,43 @@
+{% macro error_summary() %}
+  {% if errors %}
+    <div class="alert alert-danger" role="alert">
+      <p class="fw-bold mb-2">Não foi possível cadastrar. Revise os campos indicados:</p>
+      <ul class="mb-0">
+        {% for field, message in errors.items() %}
+          <li><a href="#{{ field }}">{{ message }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro field_error(name) %}
+  {% if errors.get(name) %}
+    <p id="{{ name }}-error" class="invalid-feedback d-block">{{ errors[name] }}</p>
+  {% endif %}
+{% endmacro %}
+
+{% macro text_input(name, label, limit, required=false, type='text', hint='') %}
+  <div class="mb-3">
+    <label class="form-label" for="{{ name }}">{{ label }} ({{ 'obrigatório' if required else 'opcional' }})</label>
+    <input class="form-control{% if errors.get(name) %} is-invalid{% endif %}"
+           id="{{ name }}" name="{{ name }}" type="{{ type }}" maxlength="{{ limit }}"
+           value="{{ data.get(name, '') }}"{% if required %} required{% endif %}
+           {% if errors.get(name) %}aria-invalid="true"{% endif %}
+           aria-describedby="{{ name }}-hint{% if errors.get(name) %} {{ name }}-error{% endif %}">
+    <p id="{{ name }}-hint" class="form-text">{{ hint or ('Até ' ~ limit ~ ' caracteres.') }}</p>
+    {{ field_error(name) }}
+  </div>
+{% endmacro %}
+
+{% macro observations() %}
+  <div class="mb-3">
+    <label class="form-label" for="observacoes">Observações (opcional)</label>
+    <textarea class="form-control{% if errors.get('observacoes') %} is-invalid{% endif %}"
+              id="observacoes" name="observacoes" rows="4" maxlength="2000"
+              {% if errors.get('observacoes') %}aria-invalid="true"{% endif %}
+              aria-describedby="observacoes-hint{% if errors.get('observacoes') %} observacoes-error{% endif %}">{{ data.get('observacoes', '') }}</textarea>
+    <p id="observacoes-hint" class="form-text">Até 2000 caracteres. Registre somente informações necessárias ao atendimento.</p>
+    {{ field_error('observacoes') }}
+  </div>
+{% endmacro %}

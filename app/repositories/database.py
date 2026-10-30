@@ -31,4 +31,26 @@ def init_db():
             senha_hash TEXT NOT NULL
         )
     """)
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS tutores (
+            id_tutor INTEGER PRIMARY KEY,
+            nome TEXT NOT NULL,
+            telefone TEXT NOT NULL,
+            observacoes TEXT,
+            nome_chave TEXT NOT NULL,
+            UNIQUE (nome_chave, telefone)
+        )
+    """)
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS animais (
+            id_animal INTEGER PRIMARY KEY,
+            nome TEXT NOT NULL,
+            especie TEXT NOT NULL,
+            raca TEXT,
+            porte TEXT NOT NULL,
+            observacoes TEXT,
+            id_tutor INTEGER NOT NULL,
+            FOREIGN KEY (id_tutor) REFERENCES tutores (id_tutor) ON DELETE RESTRICT
+        )
+    """)
     db.commit()
