@@ -3,7 +3,7 @@
 import sqlite3
 
 from app.repositories import animais, tutores
-from app.services.validation import ValidationError, clean_text
+from app.services.validation import ValidationError, clean_id, clean_text
 
 
 def create_animal(nome, especie, porte, id_tutor, raca="", observacoes=""):
@@ -13,15 +13,7 @@ def create_animal(nome, especie, porte, id_tutor, raca="", observacoes=""):
     porte = clean_text(porte, "porte", "Porte", 30, errors, required=True)
     raca = clean_text(raca, "raca", "Raça", 100, errors)
     observacoes = clean_text(observacoes, "observacoes", "Observações", 2000, errors)
-    try:
-        # SQLite usa inteiros de 64 bits; valores maiores não chegam à consulta.
-        if isinstance(id_tutor, bool) or not isinstance(id_tutor, (str, int)):
-            raise ValueError
-        id_tutor = int(id_tutor)
-        if not 1 <= id_tutor <= 9223372036854775807:
-            raise ValueError
-    except (ValueError, TypeError):
-        errors["id_tutor"] = "Selecione um tutor cadastrado."
+    id_tutor = clean_id(id_tutor, "id_tutor", errors, "Selecione um tutor cadastrado.")
     if errors:
         raise ValidationError(errors)
     if tutores.find_by_id(id_tutor) is None:

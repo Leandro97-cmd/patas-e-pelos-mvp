@@ -1,6 +1,8 @@
-"""Validação de texto compartilhada pelos cadastros."""
+"""Validação de entradas compartilhada pelos serviços."""
 
 import unicodedata
+
+SQLITE_MAX_INTEGER = 2**63 - 1
 
 
 class ValidationError(ValueError):
@@ -23,3 +25,17 @@ def clean_text(value, field, label, limit, errors, required=False):
     elif "\x00" in value:
         errors[field] = f"Informe um valor válido para {label.lower()}."
     return value
+
+
+def clean_id(value, field, errors, message):
+    """Valida um identificador positivo antes de vinculá-lo a uma consulta."""
+    try:
+        if isinstance(value, bool) or not isinstance(value, (str, int)):
+            raise ValueError
+        identifier = int(value)
+        if not 1 <= identifier <= SQLITE_MAX_INTEGER:
+            raise ValueError
+    except ValueError:
+        errors[field] = message
+        return None
+    return identifier

@@ -5,7 +5,7 @@ import sqlite3
 from datetime import date, time
 
 from app.repositories import agendamentos, animais
-from app.services.validation import ValidationError, clean_text
+from app.services.validation import ValidationError, clean_id, clean_text
 
 SERVICOS = ("Banho", "Tosa", "Banho + Tosa")
 STATUS_PERMITIDOS = ("Agendado", "Concluído", "Cancelado")
@@ -34,14 +34,7 @@ def create_agendamento(id_animal, servico, data, horario, observacoes=""):
             time.fromisoformat(horario)
         except ValueError:
             errors["horario"] = "Informe um horário válido entre 00:00 e 23:59."
-    try:
-        if isinstance(id_animal, bool) or not isinstance(id_animal, (str, int)):
-            raise ValueError
-        id_animal = int(id_animal)
-        if not 1 <= id_animal <= 9223372036854775807:
-            raise ValueError
-    except (ValueError, TypeError):
-        errors["id_animal"] = "Selecione um animal cadastrado."
+    id_animal = clean_id(id_animal, "id_animal", errors, "Selecione um animal cadastrado.")
     if errors:
         raise ValidationError(errors)
     if animais.find_with_tutor(id_animal) is None:
